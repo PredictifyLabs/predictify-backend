@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: predictify_db_container
+    restart: always
+    environment:
+      POSTGRES_DB: predictify_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - predictify-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: predictify_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@predictifylabs.com
+      PGADMIN_DEFAULT_PASSWORD: secret
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - predictify-network
+
+volumes:
+  postgres_data:
+
+networks:
+  predictify-network:
+    driver: bridge
