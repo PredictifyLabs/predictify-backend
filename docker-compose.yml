@@ -5,12 +5,12 @@ services:
     restart: always
     environment:
       POSTGRES_DB: predictify_db
-      POSTGRES_USER: root
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secret
     ports:
-      - "5432:5432"
+      - "5435:5432"                # <--- CAMBIO CRÍTICO: Puerto externo 5435
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_secure:/var/lib/postgresql/data
     networks:
       - predictify-network
 
@@ -29,7 +29,7 @@ services:
       - predictify-network
 
 volumes:
-  postgres_data:
+  postgres_data_secure:
 
 networks:
   predictify-network:
