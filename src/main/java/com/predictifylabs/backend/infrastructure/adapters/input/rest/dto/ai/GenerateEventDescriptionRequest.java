@@ -13,16 +13,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GenerateEventDescriptionRequest {
 
-    @NotBlank(message = "El título del evento es requerido")
-    @Size(max = 200, message = "El título no puede exceder 200 caracteres")
+    @NotBlank(message = "Event title is required")
+    @Size(max = 200, message = "Title cannot exceed 200 characters")
     private String eventTitle;
 
-    @Size(max = 100, message = "El tipo de evento no puede exceder 100 caracteres")
-    private String eventType; // Workshop, Meetup, Conferencia, etc.
+    @Size(max = 100, message = "Event type cannot exceed 100 characters")
+    private String eventType; // Workshop, Meetup, Conference, etc.
 
-    @Size(max = 500, message = "Las tecnologías no pueden exceder 500 caracteres")
+    @Size(max = 500, message = "Technologies cannot exceed 500 characters")
     private String technologies; // Java, Spring Boot, etc.
 
-    @Size(max = 1000, message = "El contexto adicional no puede exceder 1000 caracteres")
+    @Size(max = 1000, message = "Additional context cannot exceed 1000 characters")
     private String additionalContext;
 }

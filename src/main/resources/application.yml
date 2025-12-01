@@ -18,11 +18,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
-  port: 8081  # <--- CAMBIO: Usamos 8081 para evitar conflictos
+  port: 8081  # Using 8081 to avoid conflicts with local services
 
-# Configuración de IA
+# AI Configuration
 application:
   ai:
     gemini:
-      api-key: ${GEMINI_API_KEY:}  # Configurar via variable de entorno
+      api-key: ${GEMINI_API_KEY:}  # Configure via environment variable
       model: gemini-1.5-flash

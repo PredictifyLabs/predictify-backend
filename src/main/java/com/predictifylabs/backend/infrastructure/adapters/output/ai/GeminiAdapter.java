@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Adaptador de infraestructura que implementa la comunicación con la API de Google Gemini.
+ * Infrastructure adapter that implements communication with the Google Gemini API.
  */
 @Component
 @Slf4j
@@ -39,7 +39,7 @@ public class GeminiAdapter implements AiGeneratorPort {
     @Override
     public String generateText(String prompt) {
         if (apiKey == null || apiKey.isBlank()) {
-            log.warn("Gemini API key no configurada. Retornando respuesta mock.");
+            log.warn("Gemini API key not configured. Returning mock response.");
             return getMockResponse(prompt);
         }
 
@@ -57,8 +57,8 @@ public class GeminiAdapter implements AiGeneratorPort {
             return extractTextFromResponse(response);
 
         } catch (Exception e) {
-            log.error("Error al llamar a Gemini API: {}", e.getMessage(), e);
-            throw new RuntimeException("Error al generar texto con IA: " + e.getMessage(), e);
+            log.error("Error calling Gemini API: {}", e.getMessage(), e);
+            throw new RuntimeException("Error generating text with AI: " + e.getMessage(), e);
         }
     }
 
@@ -78,12 +78,12 @@ public class GeminiAdapter implements AiGeneratorPort {
 
     private String extractTextFromResponse(GeminiResponse response) {
         if (response == null || response.candidates() == null || response.candidates().isEmpty()) {
-            throw new RuntimeException("Respuesta vacía de Gemini API");
+            throw new RuntimeException("Empty response from Gemini API");
         }
 
         var candidate = response.candidates().get(0);
         if (candidate.content() == null || candidate.content().parts() == null || candidate.content().parts().isEmpty()) {
-            throw new RuntimeException("Contenido vacío en respuesta de Gemini");
+            throw new RuntimeException("Empty content in Gemini response");
         }
 
         return candidate.content().parts().get(0).text();
@@ -91,17 +91,17 @@ public class GeminiAdapter implements AiGeneratorPort {
 
     private String getMockResponse(String prompt) {
         return """
-                [MODO DESARROLLO - API Key no configurada]
+                [DEVELOPMENT MODE - API Key not configured]
                 
-                Esta es una respuesta simulada para el prompt recibido.
-                Para habilitar Gemini, configura la propiedad:
-                application.ai.gemini.api-key=TU_API_KEY
+                This is a simulated response for the received prompt.
+                To enable Gemini, configure the property:
+                application.ai.gemini.api-key=YOUR_API_KEY
                 
-                Prompt recibido: %s
+                Received prompt: %s
                 """.formatted(prompt.length() > 100 ? prompt.substring(0, 100) + "..." : prompt);
     }
 
-    // Records para deserializar la respuesta de Gemini
+    // Records for deserializing Gemini response
     record GeminiResponse(List<Candidate> candidates) {}
     record Candidate(Content content) {}
     record Content(List<Part> parts) {}

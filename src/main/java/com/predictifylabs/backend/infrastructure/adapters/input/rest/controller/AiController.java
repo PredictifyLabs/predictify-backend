@@ -26,7 +26,7 @@ public class AiController {
     private String model;
 
     /**
-     * Genera texto libre basado en un prompt personalizado.
+     * Generates free text based on a custom prompt.
      * POST /api/v1/ai/generate
      */
     @PostMapping("/generate")
@@ -43,7 +43,7 @@ public class AiController {
     }
 
     /**
-     * Genera una descripción optimizada para un evento.
+     * Generates an optimized description for an event.
      * POST /api/v1/ai/generate/event-description
      */
     @PostMapping("/generate/event-description")
@@ -62,16 +62,16 @@ public class AiController {
 
     private String buildEventContext(GenerateEventDescriptionRequest request) {
         StringBuilder context = new StringBuilder();
-        context.append("Título: ").append(request.getEventTitle());
+        context.append("Title: ").append(request.getEventTitle());
 
         if (request.getEventType() != null && !request.getEventType().isBlank()) {
-            context.append("\nTipo de evento: ").append(request.getEventType());
+            context.append("\nEvent type: ").append(request.getEventType());
         }
         if (request.getTechnologies() != null && !request.getTechnologies().isBlank()) {
-            context.append("\nTecnologías: ").append(request.getTechnologies());
+            context.append("\nTechnologies: ").append(request.getTechnologies());
         }
         if (request.getAdditionalContext() != null && !request.getAdditionalContext().isBlank()) {
-            context.append("\nContexto adicional: ").append(request.getAdditionalContext());
+            context.append("\nAdditional context: ").append(request.getAdditionalContext());
         }
 
         return context.toString();

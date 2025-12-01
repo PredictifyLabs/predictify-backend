@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GenerateTextRequest {
 
-    @NotBlank(message = "El prompt no puede estar vacío")
-    @Size(min = 10, max = 5000, message = "El prompt debe tener entre 10 y 5000 caracteres")
+    @NotBlank(message = "Prompt cannot be empty")
+    @Size(min = 10, max = 5000, message = "Prompt must be between 10 and 5000 characters")
     private String prompt;
 }

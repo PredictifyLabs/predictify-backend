@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
- * Servicio de aplicación que orquesta la generación de contenido con IA.
- * Implementa el puerto de entrada y utiliza el puerto de salida para la generación.
+ * Application service that orchestrates AI content generation.
+ * Implements the input port and uses the output port for generation.
  */
 @Service
 @RequiredArgsConstructor
@@ -18,30 +18,30 @@ public class AiService implements AiServiceUseCase {
     private final AiGeneratorPort aiGeneratorPort;
 
     private static final String EVENT_DESCRIPTION_PROMPT_TEMPLATE = """
-            Eres un asistente experto en comunidades tecnológicas y eventos de programación.
-            Genera una descripción atractiva y profesional para un evento de tecnología con el siguiente contexto:
+            You are an expert assistant in tech communities and programming events.
+            Generate an attractive and professional description for a technology event with the following context:
             
             %s
             
-            La descripción debe:
-            - Ser concisa (máximo 3 párrafos)
-            - Incluir beneficios para los asistentes
-            - Tener un tono profesional pero cercano
-            - Estar en español
+            The description should:
+            - Be concise (maximum 3 paragraphs)
+            - Include benefits for attendees
+            - Have a professional yet approachable tone
+            - Be in English
             
-            Responde SOLO con la descripción, sin explicaciones adicionales.
+            Respond ONLY with the description, without additional explanations.
             """;
 
     @Override
     public String generateEventDescription(String eventContext) {
-        log.info("Generando descripción de evento con contexto: {}", eventContext);
+        log.info("Generating event description with context: {}", eventContext);
         String prompt = String.format(EVENT_DESCRIPTION_PROMPT_TEMPLATE, eventContext);
         return aiGeneratorPort.generateText(prompt);
     }
 
     @Override
     public String generateText(String prompt) {
-        log.info("Generando texto con prompt personalizado");
+        log.info("Generating text with custom prompt");
         return aiGeneratorPort.generateText(prompt);
     }
 }

@@ -1,23 +1,23 @@
 package com.predictifylabs.backend.application.ports.input;
 
 /**
- * Puerto de entrada que define los casos de uso del servicio de IA.
+ * Input port that defines the AI service use cases.
  */
 public interface AiServiceUseCase {
 
     /**
-     * Genera una descripción para un evento basado en el contexto proporcionado.
+     * Generates a description for an event based on the provided context.
      *
-     * @param eventContext Contexto del evento (título, tipo, tecnología, etc.)
-     * @return Descripción generada por la IA
+     * @param eventContext Event context (title, type, technology, etc.)
+     * @return AI-generated description
      */
     String generateEventDescription(String eventContext);
 
     /**
-     * Genera texto libre basado en un prompt personalizado.
+     * Generates free text based on a custom prompt.
      *
-     * @param prompt El prompt a enviar a la IA
-     * @return Texto generado
+     * @param prompt The prompt to send to the AI
+     * @return Generated text
      */
     String generateText(String prompt);
 }
