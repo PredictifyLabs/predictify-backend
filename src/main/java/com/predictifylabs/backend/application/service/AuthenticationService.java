@@ -10,7 +10,6 @@ import com.predictifylabs.backend.infrastructure.adapters.output.persistence.ent
 import com.predictifylabs.backend.infrastructure.adapters.output.persistence.repository.TokenRepository;
 import com.predictifylabs.backend.infrastructure.adapters.output.persistence.repository.UserRepository;
 import com.predictifylabs.backend.infrastructure.security.JwtService;
-import com.predictifylabs.backend.infrastructure.config.ApplicationConfig; // Para UserDetails impl
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
