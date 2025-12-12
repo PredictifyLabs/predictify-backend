@@ -26,16 +26,48 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(req ->
-                        req.requestMatchers("/api/v1/auth/**", "/v3/api-docs/**", "/swagger-ui/**")
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated()
+                        req.requestMatchers(
+                                // Auth endpoints
+                                "/api/v1/auth/**",
+                                // Swagger/OpenAPI
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                // Public event endpoints (GET only)
+                                "/api/v1/events",
+                                "/api/v1/events/upcoming",
+                                "/api/v1/events/featured",
+                                "/api/v1/events/trending",
+                                "/api/v1/events/search",
+                                "/api/v1/events/slug/**",
+                                // Public organizer endpoints
+                                "/api/v1/organizers",
+                                "/api/v1/organizers/{id}",
+                                "/api/v1/organizers/{id}/events",
+                                // Public prediction endpoints
+                                "/api/v1/predictions/events/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+        var configuration = new org.springframework.web.cors.CorsConfiguration();
+        configuration.setAllowedOrigins(java.util.List.of("*"));
+        configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(java.util.List.of("*"));
+        configuration.setExposedHeaders(java.util.List.of("Authorization"));
+        
+        var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

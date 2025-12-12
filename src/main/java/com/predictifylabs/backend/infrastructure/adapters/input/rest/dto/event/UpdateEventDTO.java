@@ -3,54 +3,34 @@ package com.predictifylabs.backend.infrastructure.adapters.input.rest.dto.event;
 import com.predictifylabs.backend.domain.model.EventCategory;
 import com.predictifylabs.backend.domain.model.EventStatus;
 import com.predictifylabs.backend.domain.model.EventType;
-import lombok.Builder;
+import jakarta.validation.constraints.Min;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.util.UUID;
 
 /**
- * DTO for Event listing and details
+ * DTO for updating an existing event
  */
-@Builder
-public record EventDTO(
-    UUID id,
+public record UpdateEventDTO(
     String title,
-    String slug,
     String description,
     String shortDescription,
-    
+    EventCategory category,
+    EventType type,
+    EventStatus status,
     LocalDate startDate,
     LocalDate endDate,
     LocalTime startTime,
     LocalTime endTime,
     String timezone,
-    
-    EventCategory category,
-    EventType type,
-    EventStatus status,
-    
-    String imageUrl,
-    
+    @Min(value = 1, message = "Capacity must be at least 1")
     Integer capacity,
-    Integer interestedCount,
-    Integer registeredCount,
-    Integer attendeesCount,
-    Integer viewsCount,
-    
     BigDecimal price,
     String currency,
     Boolean isFree,
-    
+    String imageUrl,
     Boolean isFeatured,
     Boolean isTrending,
-    Boolean isNew,
-    
-    OffsetDateTime publishedAt,
-    OffsetDateTime createdAt,
-    
-    OrganizerDTO organizer,
-    EventLocationDTO location
+    CreateEventLocationDTO location
 ) {}
