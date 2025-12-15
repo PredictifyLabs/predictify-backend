@@ -1,27 +1,25 @@
-# 🚀 Guía de Despliegue en DigitalOcean
+# Guía de Despliegue en DigitalOcean Droplet
 
-Esta guía te llevará paso a paso para desplegar Predictify Backend en DigitalOcean.
+Guía completa para desplegar Predictify Backend en un **Droplet de DigitalOcean**.
 
-## 📋 Opciones de Despliegue
+## Requisitos
 
-| Opción               | Costo Mensual | Dificultad      | Recomendado para     |
-| -------------------- | ------------- | --------------- | -------------------- |
-| **App Platform**     | ~$12/mes      | ⭐ Fácil        | Desarrollo, MVP      |
-| **Droplet + Docker** | ~$6/mes       | ⭐⭐ Media      | Producción pequeña   |
-| **Kubernetes**       | ~$40/mes      | ⭐⭐⭐ Avanzada | Producción escalable |
+- Cuenta en [DigitalOcean](https://cloud.digitalocean.com)
+- Dominio configurado (opcional pero recomendado)
+- Repositorio Git con el código
 
----
+## Costo Estimado
 
-## Opción 1: App Platform (Recomendado para empezar)
+| Recurso | Especificaciones | Costo                 |
+| ------- | ---------------- | --------------------- |
+| Droplet | 1GB RAM, 1 vCPU  | $6/mes                |
+| Droplet | 2GB RAM, 1 vCPU  | $12/mes (recomendado) |
 
-### Paso 1: Preparar el Repositorio
+git add .
+git commit -m "Preparar para despliegue en DigitalOcean"
+git push origin main
 
-1. **Sube tu código a GitHub/GitLab:**
-   ```bash
-   git add .
-   git commit -m "Preparar para despliegue en DigitalOcean"
-   git push origin main
-   ```
+````
 
 ### Paso 2: Crear la App en DigitalOcean
 
@@ -35,8 +33,8 @@ Esta guía te llevará paso a paso para desplegar Predictify Backend en DigitalO
 
 1. **Detectará automáticamente el Dockerfile**
 2. Configura los recursos:
-   - **Instance Size:** Basic ($5/mes) o Basic XXS ($12/mes para más RAM)
-   - **Instance Count:** 1
+- **Instance Size:** Basic ($5/mes) o Basic XXS ($12/mes para más RAM)
+- **Instance Count:** 1
 
 ### Paso 4: Agregar Base de Datos
 
@@ -92,16 +90,16 @@ Click en el servicio `api` y agrega estas variables:
 1. Ve a [DigitalOcean Droplets](https://cloud.digitalocean.com/droplets)
 2. Click **"Create Droplet"**
 3. Configura:
-   - **Image:** Ubuntu 22.04 LTS
-   - **Plan:** Basic - Regular ($6/mes - 1GB RAM, 1 vCPU)
-   - **Region:** El más cercano a tus usuarios
-   - **Authentication:** SSH Keys (recomendado)
+- **Image:** Ubuntu 22.04 LTS
+- **Plan:** Basic - Regular ($6/mes - 1GB RAM, 1 vCPU)
+- **Region:** El más cercano a tus usuarios
+- **Authentication:** SSH Keys (recomendado)
 
 ### Paso 2: Conectar al Droplet
 
 ```bash
 ssh root@TU_IP_DEL_DROPLET
-```
+````
 
 ### Paso 3: Instalar Docker
 

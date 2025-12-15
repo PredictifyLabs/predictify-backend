@@ -1,7 +1,22 @@
-# Docker Compose para producción en un Droplet de DigitalOcean
-# Uso: docker-compose -f docker-compose.prod.yml up -d
+# =============================================================================
+# Docker Compose para Producción - DigitalOcean Droplet
+# =============================================================================
+# Optimizado para Droplets de 1GB-2GB RAM
+#
+# Uso básico:
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# Con rebuild:
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Ver logs:
+#   docker compose -f docker-compose.prod.yml logs -f api
+# =============================================================================
 
 services:
+  # ---------------------------------------------------------------------------
+  # API Spring Boot
+  # ---------------------------------------------------------------------------
   api:
     build:
       context: .
@@ -9,21 +24,35 @@ services:
     container_name: predictify_api
     restart: unless-stopped
     environment:
+      # Spring
       - SPRING_PROFILES_ACTIVE=prod
       - PORT=8081
+      
+      # Database
       - DATABASE_HOST=db
       - DATABASE_PORT=5432
       - DATABASE_NAME=${POSTGRES_DB:-predictify_db}
       - DATABASE_USER=${POSTGRES_USER:-postgres}
       - DATABASE_PASSWORD=${POSTGRES_PASSWORD:?Database password required}
       - DATABASE_SSLMODE=disable
+      
+      # Security
       - JWT_SECRET=${JWT_SECRET:?JWT secret required}
       - JWT_EXPIRATION=${JWT_EXPIRATION:-86400000}
+      
+      # AI (opcional)
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      
+      # CORS
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
-      - HIKARI_MAX_POOL_SIZE=5
+      
+      # Performance - ajustado para Droplets pequeños
+      - HIKARI_MAX_POOL_SIZE=${HIKARI_MAX_POOL_SIZE:-5}
+      
+      # JVM - optimizado para contenedores con poca memoria
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -XX:+UseStringDeduplication
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:8081"  # Solo localhost (Nginx hará proxy)
     depends_on:
       db:
         condition: service_healthy
@@ -32,16 +61,24 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 90s  # Spring Boot tarda en iniciar
     networks:
       - predictify-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     deploy:
       resources:
         limits:
           memory: 512M
         reservations:
-          memory: 256M
+          memory: 384M
 
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
   db:
     image: postgres:16-alpine
     container_name: predictify_db
@@ -51,8 +88,13 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Database password required}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+      # Optimizaciones para Droplets pequeños
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    # NO exponer puerto externamente por seguridad
+    # ports:
+    #   - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-predictify_db}"]
       interval: 10s
@@ -61,36 +103,33 @@ services:
       start_period: 30s
     networks:
       - predictify-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     deploy:
       resources:
         limits:
           memory: 256M
         reservations:
           memory: 128M
-
-  # Nginx reverse proxy con SSL (opcional pero recomendado)
-  nginx:
-    image: nginx:alpine
-    container_name: predictify_nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - certbot_data:/var/www/certbot:ro
-    depends_on:
-      - api
-    networks:
-      - predictify-network
-    profiles:
-      - with-nginx
+    # Configuración de PostgreSQL para bajo consumo de memoria
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=64MB"
+      - "-c"
+      - "effective_cache_size=128MB"
+      - "-c"
+      - "maintenance_work_mem=32MB"
+      - "-c"
+      - "work_mem=4MB"
+      - "-c"
+      - "max_connections=50"
 
 volumes:
   postgres_data:
-    driver: local
-  certbot_data:
     driver: local
 
 networks:
