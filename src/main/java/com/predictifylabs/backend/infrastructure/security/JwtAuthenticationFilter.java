@@ -28,8 +28,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
-        // Skip authentication for auth endpoints
-        if (request.getServletPath().contains("/api/auth")) {
+        // Skip authentication for public endpoints
+        String path = request.getServletPath();
+        if (path.contains("/api/v1/auth") ||
+                path.contains("/actuator") ||
+                path.contains("/swagger") ||
+                path.contains("/v3/api-docs")) {
             filterChain.doFilter(request, response);
             return;
         }
