@@ -1,32 +1,12 @@
 services:
-  # PostgreSQL Database
-  - type: pserv
-    name: predictify-db
-    env: docker
-    plan: free
-    region: oregon
-    image:
-      url: docker.io/postgres:17-alpine
-    envVars:
-      - key: POSTGRES_DB
-        value: predictify_db
-      - key: POSTGRES_USER
-        value: postgres
-      - key: POSTGRES_PASSWORD
-        generateValue: true
-    disk:
-      name: predictify-db-data
-      mountPath: /var/lib/postgresql/data
-      sizeGB: 1
-
   # Spring Boot Backend Application
   - type: web
     name: predictify-backend
-    env: java
+    runtime: docker
     region: oregon
     plan: free
-    buildCommand: ./mvnw clean package -DskipTests
-    startCommand: java -jar target/*.jar
+    dockerfilePath: ./Dockerfile
+    dockerContext: ./
     envVars:
       # Server Configuration
       - key: SERVER_PORT
@@ -69,12 +49,9 @@ services:
         value: "*"
     
     healthCheckPath: /actuator/health
-    
-    autoDeploy: true
 
 databases:
   - name: predictify-db
     databaseName: predictify_db
-    user: postgres
     plan: free
     region: oregon
