@@ -60,8 +60,13 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.security: DEBUG
 
-# AI Configuration
+# Application Configuration
 application:
+  # CORS Configuration
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:3000}
+
+  # AI Configuration
   ai:
     gemini:
       api-key: ${GEMINI_API_KEY:}
