@@ -14,16 +14,24 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       
-      # Database Configuration
-      - key: SPRING_DATASOURCE_URL
+      # Database Configuration - Use individual properties to construct JDBC URL
+      - key: DATABASE_HOST
         fromDatabase:
           name: predictify-db
-          property: connectionString
-      - key: SPRING_DATASOURCE_USERNAME
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: predictify-db
+          property: port
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: predictify-db
+          property: database
+      - key: DATABASE_USER
         fromDatabase:
           name: predictify-db
           property: user
-      - key: SPRING_DATASOURCE_PASSWORD
+      - key: DATABASE_PASSWORD
         fromDatabase:
           name: predictify-db
           property: password
