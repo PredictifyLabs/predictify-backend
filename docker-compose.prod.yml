@@ -52,7 +52,7 @@ services:
       # JVM - optimizado para contenedores con poca memoria
       - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -XX:+UseStringDeduplication
     ports:
-      - "127.0.0.1:8081:8081"  # Solo localhost (Nginx hará proxy)
+      - "8081:8081"  # Expuesto para acceso directo (usar Nginx en producción)
     depends_on:
       db:
         condition: service_healthy
