@@ -12,9 +12,14 @@ spring:
       idle-timeout: 600000
       max-lifetime: 1800000
 
+  # Flyway configuration
+  flyway:
+    enabled: false  # Temporarily disabled - let Hibernate create schema first
+    baseline-on-migrate: true
+
   jpa:
     hibernate:
-      ddl-auto: none  # Flyway manages schema, not Hibernate
+      ddl-auto: update  # Temporarily let Hibernate create schema
     show-sql: false  # Disable SQL logging in production
     open-in-view: false
     properties:
