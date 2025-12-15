@@ -8,24 +8,29 @@ CREATE TABLE IF NOT EXISTS users (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    role VARCHAR(50) NOT NULL DEFAULT 'USER',
-    email_verified BOOLEAN DEFAULT FALSE,
-    profile_picture_url TEXT,
+    name VARCHAR(150) NOT NULL,
+    role VARCHAR(50) NOT NULL DEFAULT 'ATTENDEE',
+    avatar TEXT,
     bio TEXT,
+    location VARCHAR(255),
+    is_verified BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
+    email_verified_at TIMESTAMP,
     last_login_at TIMESTAMP,
+    failed_login_attempts SMALLINT DEFAULT 0,
+    locked_until TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS refresh_tokens (
-    token_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    token VARCHAR(500) UNIQUE NOT NULL,
+    token_hash VARCHAR(255) UNIQUE NOT NULL,
+    device_info TEXT,
+    ip_address VARCHAR(45),
     expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    revoked BOOLEAN DEFAULT FALSE
+    revoked_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS email_verifications (
     verification_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
