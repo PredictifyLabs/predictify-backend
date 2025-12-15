@@ -22,83 +22,89 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-    private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
+        private final UserRepository userRepository;
+        private final RefreshTokenRepository refreshTokenRepository;
+        private final PasswordEncoder passwordEncoder;
+        private final JwtService jwtService;
+        private final AuthenticationManager authenticationManager;
 
-    @Transactional
-    public AuthenticationResponse register(RegisterRequest request) {
-        var user = UserEntity.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole() != null ? request.getRole() : Role.ATTENDEE)
-                .build();
+        @Transactional
+        public AuthenticationResponse register(RegisterRequest request) {
+                // Check if email already exists
+                if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                        throw new IllegalArgumentException("Email already registered: " + request.getEmail());
+                }
 
-        var savedUser = userRepository.save(user);
+                var user = UserEntity.builder()
+                                .name(request.getName())
+                                .email(request.getEmail())
+                                .password(passwordEncoder.encode(request.getPassword()))
+                                .role(request.getRole() != null ? request.getRole() : Role.ATTENDEE)
+                                .build();
 
-        var userDetails = new org.springframework.security.core.userdetails.User(
-                savedUser.getEmail(),
-                savedUser.getPassword(),
-                java.util.Collections.emptyList());
+                var savedUser = userRepository.save(user);
 
-        var jwtToken = jwtService.generateToken(userDetails);
-        var refreshToken = jwtService.generateRefreshToken(userDetails);
+                var userDetails = new org.springframework.security.core.userdetails.User(
+                                savedUser.getEmail(),
+                                savedUser.getPassword(),
+                                java.util.Collections.emptyList());
 
-        saveUserRefreshToken(savedUser, refreshToken);
+                var jwtToken = jwtService.generateToken(userDetails);
+                var refreshToken = jwtService.generateRefreshToken(userDetails);
 
-        return AuthenticationResponse.builder()
-                .accessToken(jwtToken)
-                .refreshToken(refreshToken)
-                .build();
-    }
+                saveUserRefreshToken(savedUser, refreshToken);
 
-    @Transactional
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()));
+                return AuthenticationResponse.builder()
+                                .accessToken(jwtToken)
+                                .refreshToken(refreshToken)
+                                .build();
+        }
 
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        @Transactional
+        public AuthenticationResponse authenticate(AuthenticationRequest request) {
+                authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                request.getEmail(),
+                                                request.getPassword()));
 
-        // Update last login
-        user.setLastLoginAt(OffsetDateTime.now());
-        user.setFailedLoginAttempts((short) 0);
-        userRepository.save(user);
+                var user = userRepository.findByEmail(request.getEmail())
+                                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        var userDetails = new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(),
-                java.util.Collections.emptyList());
+                // Update last login
+                user.setLastLoginAt(OffsetDateTime.now());
+                user.setFailedLoginAttempts((short) 0);
+                userRepository.save(user);
 
-        var jwtToken = jwtService.generateToken(userDetails);
-        var refreshToken = jwtService.generateRefreshToken(userDetails);
+                var userDetails = new org.springframework.security.core.userdetails.User(
+                                user.getEmail(),
+                                user.getPassword(),
+                                java.util.Collections.emptyList());
 
-        revokeAllUserTokens(user.getId());
-        saveUserRefreshToken(user, refreshToken);
+                var jwtToken = jwtService.generateToken(userDetails);
+                var refreshToken = jwtService.generateRefreshToken(userDetails);
 
-        return AuthenticationResponse.builder()
-                .accessToken(jwtToken)
-                .refreshToken(refreshToken)
-                .build();
-    }
+                revokeAllUserTokens(user.getId());
+                saveUserRefreshToken(user, refreshToken);
 
-    private void saveUserRefreshToken(UserEntity user, String token) {
-        var refreshToken = RefreshTokenEntity.builder()
-                .user(user)
-                .tokenHash(String.valueOf(token.hashCode())) // Simplified - in production use proper hashing
-                .expiresAt(OffsetDateTime.now().plusDays(7))
-                .build();
-        refreshTokenRepository.save(refreshToken);
-    }
+                return AuthenticationResponse.builder()
+                                .accessToken(jwtToken)
+                                .refreshToken(refreshToken)
+                                .build();
+        }
 
-    private void revokeAllUserTokens(UUID userId) {
-        var validTokens = refreshTokenRepository.findAllValidTokenByUser(userId, OffsetDateTime.now());
-        validTokens.forEach(token -> token.setRevokedAt(OffsetDateTime.now()));
-        refreshTokenRepository.saveAll(validTokens);
-    }
+        private void saveUserRefreshToken(UserEntity user, String token) {
+                var refreshToken = RefreshTokenEntity.builder()
+                                .user(user)
+                                .tokenHash(String.valueOf(token.hashCode())) // Simplified - in production use proper
+                                                                             // hashing
+                                .expiresAt(OffsetDateTime.now().plusDays(7))
+                                .build();
+                refreshTokenRepository.save(refreshToken);
+        }
+
+        private void revokeAllUserTokens(UUID userId) {
+                var validTokens = refreshTokenRepository.findAllValidTokenByUser(userId, OffsetDateTime.now());
+                validTokens.forEach(token -> token.setRevokedAt(OffsetDateTime.now()));
+                refreshTokenRepository.saveAll(validTokens);
+        }
 }
