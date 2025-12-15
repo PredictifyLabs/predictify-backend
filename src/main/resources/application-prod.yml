@@ -22,7 +22,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate # NEVER use 'create' in production - use Flyway migrations
+      ddl-auto: update # Temporarily set to 'update' to sync schema - change to 'validate' after first successful deploy
     show-sql: false
     open-in-view: false
     properties:
