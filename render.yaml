@@ -1,0 +1,65 @@
+services:
+  # Spring Boot Backend Application
+  - type: web
+    name: predictify-backend
+    runtime: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: ./
+    envVars:
+      # Server Configuration
+      - key: SERVER_PORT
+        value: 8081
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      
+      # Database Configuration - Use individual properties to construct JDBC URL
+      - key: DATABASE_HOST
+        fromDatabase:
+          name: predictify-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: predictify-db
+          property: port
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: predictify-db
+          property: database
+      - key: DATABASE_USER
+        fromDatabase:
+          name: predictify-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: predictify-db
+          property: password
+      
+      # JPA/Hibernate Configuration
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: validate
+      - key: SPRING_JPA_SHOW_SQL
+        value: false
+      - key: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
+        value: org.hibernate.dialect.PostgreSQLDialect
+      - key: SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL
+        value: false
+      
+      # Security JWT Configuration (Generate a secure secret for production)
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION
+        value: 86400000
+      
+      # Application Configuration
+      - key: ALLOWED_ORIGINS
+        value: "*"
+    
+    healthCheckPath: /actuator/health
+
+databases:
+  - name: predictify-db
+    databaseName: predictify_db
+    plan: free
+    region: oregon

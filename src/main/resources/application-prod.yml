@@ -1,0 +1,66 @@
+spring:
+  datasource:
+    # Construct JDBC URL from individual components
+    # Render provides these as separate properties from the database resource
+    url: jdbc:postgresql://${DATABASE_HOST:localhost}:${DATABASE_PORT:5432}/${DATABASE_NAME:predictify_db}
+    username: ${DATABASE_USER:postgres}
+    password: ${DATABASE_PASSWORD:secret}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Production should validate schema only
+    show-sql: false  # Disable SQL logging in production
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false  # Disable SQL formatting in production
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
+          batch_size: 20
+        id:
+          new_generator_mappings: true
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  jackson:
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: ${PORT:8081}  # Render sets PORT environment variable
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never  # Don't expose stack traces in production
+    include-exception: false
+
+# Logging - production level
+logging:
+  level:
+    root: INFO
+    com.predictifylabs.backend: INFO
+    org.hibernate.SQL: WARN
+    org.springframework.security: INFO
+
+# AI Configuration
+application:
+  ai:
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: gemini-3.0-Pro
+  
+  # JWT Configuration
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION:86400000}  # 24 hours
+    refresh-expiration: 604800000  # 7 days
