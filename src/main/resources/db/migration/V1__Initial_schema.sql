@@ -386,7 +386,7 @@ CREATE INDEX idx_trends_event_date ON registration_trends(event_id, recorded_dat
 -- Auth/Security
 CREATE INDEX idx_active_sessions_user ON active_sessions(user_id);
 CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
-CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
+CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token_hash);
 -- Audit
 CREATE INDEX idx_audit_user ON audit_logs(user_id);
 CREATE INDEX idx_audit_entity ON audit_logs(entity_type, entity_id);
