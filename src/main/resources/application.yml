@@ -1,7 +1,7 @@
 spring:
   application:
     name: predictifylabs-backend
-  
+
   datasource:
     url: jdbc:postgresql://localhost:5435/predictify_db
     username: postgres
@@ -15,7 +15,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none  # Using schema.sql for database initialization
+      ddl-auto: none # Using schema.sql for database initialization
     show-sql: true
     open-in-view: false
     properties:
@@ -37,8 +37,8 @@ spring:
   # SQL initialization - only runs if database is empty
   sql:
     init:
-      mode: never  # Schema is managed by docker-compose init script
-      
+      mode: never # Schema is managed by docker-compose init script
+
   jackson:
     time-zone: UTC
     serialization:
@@ -60,15 +60,32 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.security: DEBUG
 
-# AI Configuration
+# Application Configuration
 application:
+  # CORS Configuration
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:3000}
+
+  # AI Configuration
   ai:
     gemini:
       api-key: ${GEMINI_API_KEY:}
       model: gemini-3.0-Pro
-  
+
   # JWT Configuration
   jwt:
     secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
-    expiration: 86400000  # 24 hours in milliseconds
-    refresh-expiration: 604800000  # 7 days in milliseconds
+    expiration: 86400000 # 24 hours in milliseconds
+    refresh-expiration: 604800000 # 7 days in milliseconds
+
+# OpenAPI / Swagger Configuration
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: false

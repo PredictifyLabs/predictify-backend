@@ -1,0 +1,75 @@
+name: predictify-backend
+region: nyc
+
+services:
+  - name: api
+    dockerfile_path: Dockerfile
+    github:
+      branch: main
+      deploy_on_push: true
+      # Reemplaza con tu repositorio real
+      repo: PredictifyLabs/predictify-backend
+    instance_count: 1
+    instance_size_slug: basic-xxs # $5/mes - Mínimo para iniciar
+    http_port: 8081
+    routes:
+      - path: /
+    health_check:
+      http_path: /actuator/health
+      initial_delay_seconds: 60
+      period_seconds: 30
+      timeout_seconds: 10
+      success_threshold: 1
+      failure_threshold: 3
+    envs:
+      # Perfil de Spring
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: PORT
+        value: "8081"
+
+      # Base de datos (conecta con el componente de DB)
+      - key: DATABASE_HOST
+        scope: RUN_TIME
+        value: ${db.HOSTNAME}
+      - key: DATABASE_PORT
+        scope: RUN_TIME
+        value: ${db.PORT}
+      - key: DATABASE_NAME
+        scope: RUN_TIME
+        value: ${db.DATABASE}
+      - key: DATABASE_USER
+        scope: RUN_TIME
+        value: ${db.USERNAME}
+      - key: DATABASE_PASSWORD
+        scope: RUN_TIME
+        value: ${db.PASSWORD}
+
+      # JWT - Genera una clave segura de 256 bits
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+        value: "CAMBIAR_POR_CLAVE_SEGURA_DE_64_CARACTERES_MINIMO"
+      - key: JWT_EXPIRATION
+        value: "86400000"
+
+      # Gemini AI (opcional)
+      - key: GEMINI_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+        value: ""
+
+      # CORS - Configurar con tu dominio frontend
+      - key: ALLOWED_ORIGINS
+        value: "https://tu-frontend.ondigitalocean.app,http://localhost:4200"
+
+      # JVM optimizations para instancias pequeñas
+      - key: JAVA_OPTS
+        value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+
+databases:
+  - name: db
+    engine: PG
+    version: "16"
+    size: db-s-dev-database # $7/mes - Base de datos de desarrollo
+    num_nodes: 1
