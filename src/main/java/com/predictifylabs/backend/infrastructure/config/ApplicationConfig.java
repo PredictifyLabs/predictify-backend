@@ -1,9 +1,11 @@
 package com.predictifylabs.backend.infrastructure.config;
 
+import com.predictifylabs.backend.domain.model.Role;
 import com.predictifylabs.backend.infrastructure.adapters.output.persistence.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -12,6 +14,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -25,9 +29,20 @@ public class ApplicationConfig {
                 .map(user -> new org.springframework.security.core.userdetails.User(
                         user.getEmail(),
                         user.getPassword(),
-                        java.util.Collections.emptyList() // Roles pendientes de mapear a Authority
+                        List.of(new SimpleGrantedAuthority(mapRoleToAuthority(user.getRole())))
                 ))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    static String mapRoleToAuthority(Role role) {
+        if (role == null) {
+            throw new UsernameNotFoundException("User role is invalid: null");
+        }
+
+        return switch (role) {
+            case ADMIN -> "ROLE_ADMIN";
+            case ATTENDEE, ORGANIZER -> "ROLE_USER";
+        };
     }
 
     @Bean

@@ -36,6 +36,9 @@ public class ErrorResponse {
     @Schema(description = "Request path", example = "/api/v1/auth/register")
     private String path;
 
+    @Schema(description = "Stable machine-readable error code", example = "VALIDATION_ERROR")
+    private String code;
+
     @Schema(description = "Field-specific validation errors")
     private Map<String, String> errors;
 }
