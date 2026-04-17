@@ -3,6 +3,8 @@ package com.predictifylabs.backend.application.service;
 import com.predictifylabs.backend.domain.model.EventStatus;
 import com.predictifylabs.backend.domain.model.LocationType;
 import com.predictifylabs.backend.infrastructure.adapters.input.rest.dto.event.*;
+import com.predictifylabs.backend.infrastructure.adapters.input.rest.exception.ForbiddenOperationException;
+import com.predictifylabs.backend.infrastructure.adapters.input.rest.exception.ResourceNotFoundException;
 import com.predictifylabs.backend.infrastructure.adapters.output.persistence.entity.EventEntity;
 import com.predictifylabs.backend.infrastructure.adapters.output.persistence.entity.EventLocationEntity;
 import com.predictifylabs.backend.infrastructure.adapters.output.persistence.repository.EventRepository;
@@ -72,7 +74,7 @@ public class EventService {
     public EventDTO getEventById(UUID id) {
         return eventRepository.findById(id)
                 .map(this::toDTO)
-                .orElseThrow(() -> new RuntimeException("Event not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + id));
     }
 
     /**
@@ -81,7 +83,7 @@ public class EventService {
     public EventDTO getEventBySlug(String slug) {
         return eventRepository.findBySlug(slug)
                 .map(this::toDTO)
-                .orElseThrow(() -> new RuntimeException("Event not found with slug: " + slug));
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with slug: " + slug));
     }
 
     /**
@@ -96,7 +98,7 @@ public class EventService {
      */
     public List<EventDTO> getEventsByOrganizerUserId(UUID userId) {
         var organizer = organizerRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Organizer not found for user: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Organizer not found for user: " + userId));
         return eventRepository.findByOrganizer(organizer.getId()).stream().map(this::toDTO).toList();
     }
 
@@ -108,7 +110,7 @@ public class EventService {
         log.info("Creating event '{}' for user {}", dto.title(), userId);
 
         var organizer = organizerRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User is not an organizer. Please create an organizer profile first."));
+                .orElseThrow(() -> new ForbiddenOperationException("User is not an organizer. Please create an organizer profile first."));
 
         var event = EventEntity.builder()
                 .organizer(organizer)
@@ -155,14 +157,14 @@ public class EventService {
         log.info("Updating event {} for user {}", eventId, userId);
 
         var event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found with id: " + eventId));
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + eventId));
 
         // Verify ownership
         var organizer = organizerRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User is not an organizer"));
+                .orElseThrow(() -> new ForbiddenOperationException("User is not an organizer"));
 
         if (!event.getOrganizer().getId().equals(organizer.getId())) {
-            throw new RuntimeException("You are not authorized to update this event");
+            throw new ForbiddenOperationException("You are not authorized to update this event");
         }
 
         // Update fields if provided
@@ -210,14 +212,14 @@ public class EventService {
         log.info("Deleting event {} for user {}", eventId, userId);
 
         var event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found with id: " + eventId));
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + eventId));
 
         // Verify ownership
         var organizer = organizerRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User is not an organizer"));
+                .orElseThrow(() -> new ForbiddenOperationException("User is not an organizer"));
 
         if (!event.getOrganizer().getId().equals(organizer.getId())) {
-            throw new RuntimeException("You are not authorized to delete this event");
+            throw new ForbiddenOperationException("You are not authorized to delete this event");
         }
 
         eventRepository.delete(event);
@@ -235,13 +237,13 @@ public class EventService {
     @Transactional
     public EventDTO publishEvent(UUID eventId, UUID userId) {
         var event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found with id: " + eventId));
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + eventId));
 
         var organizer = organizerRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User is not an organizer"));
+                .orElseThrow(() -> new ForbiddenOperationException("User is not an organizer"));
 
         if (!event.getOrganizer().getId().equals(organizer.getId())) {
-            throw new RuntimeException("You are not authorized to publish this event");
+            throw new ForbiddenOperationException("You are not authorized to publish this event");
         }
 
         event.setStatus(EventStatus.PUBLISHED);
@@ -259,13 +261,13 @@ public class EventService {
     @Transactional
     public EventDTO cancelEvent(UUID eventId, UUID userId) {
         var event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found with id: " + eventId));
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + eventId));
 
         var organizer = organizerRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User is not an organizer"));
+                .orElseThrow(() -> new ForbiddenOperationException("User is not an organizer"));
 
         if (!event.getOrganizer().getId().equals(organizer.getId())) {
-            throw new RuntimeException("You are not authorized to cancel this event");
+            throw new ForbiddenOperationException("You are not authorized to cancel this event");
         }
 
         event.setStatus(EventStatus.CANCELLED);

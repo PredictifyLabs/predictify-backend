@@ -1,6 +1,8 @@
 package com.predictifylabs.backend.application.service;
 
 import com.predictifylabs.backend.infrastructure.adapters.input.rest.dto.registration.EventRegistrationDTO;
+import com.predictifylabs.backend.infrastructure.adapters.input.rest.exception.BusinessConflictException;
+import com.predictifylabs.backend.infrastructure.adapters.input.rest.exception.ResourceNotFoundException;
 import com.predictifylabs.backend.infrastructure.adapters.output.persistence.entity.EventRegistrationEntity;
 import com.predictifylabs.backend.infrastructure.adapters.output.persistence.repository.EventRegistrationRepository;
 import com.predictifylabs.backend.infrastructure.adapters.output.persistence.repository.EventRepository;
@@ -36,18 +38,18 @@ public class EventRegistrationService {
 
         // Check if already registered
         if (registrationRepository.existsByEventIdAndUserId(eventId, userId)) {
-            throw new RuntimeException("User is already registered to this event");
+            throw new BusinessConflictException("User is already registered to this event");
         }
 
         var event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found with id: " + eventId));
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + eventId));
 
         var user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         // Check capacity
         if (event.getRegisteredCount() >= event.getCapacity()) {
-            throw new RuntimeException("Event is at full capacity");
+            throw new BusinessConflictException("Event is at full capacity");
         }
 
         var registration = EventRegistrationEntity.builder()
@@ -76,10 +78,10 @@ public class EventRegistrationService {
         log.info("Cancelling registration for user {} from event {}", userId, eventId);
 
         var registration = registrationRepository.findByEventIdAndUserId(eventId, userId)
-                .orElseThrow(() -> new RuntimeException("Registration not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Registration not found"));
 
         if ("cancelled".equals(registration.getStatus())) {
-            throw new RuntimeException("Registration is already cancelled");
+            throw new BusinessConflictException("Registration is already cancelled");
         }
 
         registration.setStatus("cancelled");
@@ -136,7 +138,7 @@ public class EventRegistrationService {
         log.info("Marking attendance for user {} at event {}", userId, eventId);
 
         var registration = registrationRepository.findByEventIdAndUserId(eventId, userId)
-                .orElseThrow(() -> new RuntimeException("Registration not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Registration not found"));
 
         registration.setAttended(true);
         registration.setAttendedAt(OffsetDateTime.now());

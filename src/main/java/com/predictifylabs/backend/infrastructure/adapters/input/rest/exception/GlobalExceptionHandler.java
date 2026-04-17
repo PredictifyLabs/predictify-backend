@@ -42,7 +42,8 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.UNAUTHORIZED,
                 "Invalid email or password",
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.AUTH_FAILED);
     }
 
     @ExceptionHandler(AuthenticationException.class)
@@ -51,7 +52,8 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.UNAUTHORIZED,
                 "Authentication failed: " + ex.getMessage(),
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.AUTH_FAILED);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -60,7 +62,38 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.FORBIDDEN,
                 "Access denied. You don't have permission to access this resource.",
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.AUTH_FORBIDDEN);
+    }
+
+    @ExceptionHandler(AuthTokenInvalidException.class)
+    public ResponseEntity<ErrorResponse> handleAuthTokenInvalid(AuthTokenInvalidException ex, WebRequest request) {
+        log.warn("Auth token invalid: {}", ex.getMessage());
+        return buildErrorResponse(
+                HttpStatus.UNAUTHORIZED,
+                ex.getMessage(),
+                request.getDescription(false),
+                ErrorCodes.AUTH_INVALID_TOKEN);
+    }
+
+    @ExceptionHandler(AuthTokenExpiredException.class)
+    public ResponseEntity<ErrorResponse> handleAuthTokenExpired(AuthTokenExpiredException ex, WebRequest request) {
+        log.warn("Auth token expired: {}", ex.getMessage());
+        return buildErrorResponse(
+                HttpStatus.UNAUTHORIZED,
+                ex.getMessage(),
+                request.getDescription(false),
+                ErrorCodes.AUTH_TOKEN_EXPIRED);
+    }
+
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<ErrorResponse> handleForbiddenOperation(ForbiddenOperationException ex, WebRequest request) {
+        log.warn("Forbidden operation: {}", ex.getMessage());
+        return buildErrorResponse(
+                HttpStatus.FORBIDDEN,
+                ex.getMessage(),
+                request.getDescription(false),
+                ErrorCodes.AUTH_FORBIDDEN);
     }
 
     // ==================== VALIDATION ERRORS ====================
@@ -79,7 +112,8 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 "Validation failed",
                 request.getDescription(false),
-                errors);
+                errors,
+                ErrorCodes.VALIDATION_ERROR);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -96,7 +130,8 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 "Validation failed",
                 request.getDescription(false),
-                errors);
+                errors,
+                ErrorCodes.VALIDATION_ERROR);
     }
 
     // ==================== ENTITY ERRORS ====================
@@ -107,7 +142,18 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.NOT_FOUND,
                 ex.getMessage(),
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.RESOURCE_NOT_FOUND);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex, WebRequest request) {
+        log.warn("Resource not found: {}", ex.getMessage());
+        return buildErrorResponse(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage(),
+                request.getDescription(false),
+                ErrorCodes.RESOURCE_NOT_FOUND);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -126,7 +172,18 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.CONFLICT,
                 message,
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.BUSINESS_CONFLICT);
+    }
+
+    @ExceptionHandler(BusinessConflictException.class)
+    public ResponseEntity<ErrorResponse> handleBusinessConflict(BusinessConflictException ex, WebRequest request) {
+        log.warn("Business conflict: {}", ex.getMessage());
+        return buildErrorResponse(
+                HttpStatus.CONFLICT,
+                ex.getMessage(),
+                request.getDescription(false),
+                ErrorCodes.BUSINESS_CONFLICT);
     }
 
     // ==================== REQUEST ERRORS ====================
@@ -138,7 +195,8 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.METHOD_NOT_ALLOWED,
                 "HTTP method '" + ex.getMethod() + "' is not supported for this endpoint",
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.REQUEST_INVALID);
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
@@ -148,7 +206,8 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.UNSUPPORTED_MEDIA_TYPE,
                 "Media type '" + ex.getContentType() + "' is not supported. Use 'application/json'",
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.REQUEST_INVALID);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -158,7 +217,8 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 "Required parameter '" + ex.getParameterName() + "' is missing",
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.REQUEST_INVALID);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -171,7 +231,8 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 message,
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.REQUEST_INVALID);
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
@@ -180,7 +241,8 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.NOT_FOUND,
                 "Endpoint not found: " + ex.getRequestURL(),
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.RESOURCE_NOT_FOUND);
     }
 
     // ==================== BUSINESS LOGIC ERRORS ====================
@@ -191,7 +253,8 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 ex.getMessage(),
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.REQUEST_INVALID);
     }
 
     @ExceptionHandler(IllegalStateException.class)
@@ -200,7 +263,8 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.CONFLICT,
                 ex.getMessage(),
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.BUSINESS_CONFLICT);
     }
 
     // ==================== GENERIC EXCEPTION ====================
@@ -211,13 +275,18 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred. Please try again later.",
-                request.getDescription(false));
+                request.getDescription(false),
+                ErrorCodes.INTERNAL_ERROR);
     }
 
     // ==================== HELPER METHODS ====================
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message, String path) {
-        return buildErrorResponse(status, message, path, null);
+        return buildErrorResponse(status, message, path, null, null);
+    }
+
+    private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message, String path, String code) {
+        return buildErrorResponse(status, message, path, null, code);
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(
@@ -225,12 +294,22 @@ public class GlobalExceptionHandler {
             String message,
             String path,
             Map<String, String> errors) {
+        return buildErrorResponse(status, message, path, errors, null);
+    }
+
+    private ResponseEntity<ErrorResponse> buildErrorResponse(
+            HttpStatus status,
+            String message,
+            String path,
+            Map<String, String> errors,
+            String code) {
         ErrorResponse response = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(status.value())
                 .error(status.getReasonPhrase())
                 .message(message)
                 .path(path.replace("uri=", ""))
+                .code(code)
                 .errors(errors)
                 .build();
 

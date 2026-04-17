@@ -2,6 +2,8 @@ package com.predictifylabs.backend.application.service;
 
 import com.predictifylabs.backend.infrastructure.adapters.input.rest.dto.organizer.CreateOrganizerDTO;
 import com.predictifylabs.backend.infrastructure.adapters.input.rest.dto.organizer.OrganizerProfileDTO;
+import com.predictifylabs.backend.infrastructure.adapters.input.rest.exception.BusinessConflictException;
+import com.predictifylabs.backend.infrastructure.adapters.input.rest.exception.ResourceNotFoundException;
 import com.predictifylabs.backend.infrastructure.adapters.output.persistence.entity.OrganizerEntity;
 import com.predictifylabs.backend.infrastructure.adapters.output.persistence.repository.OrganizerRepository;
 import com.predictifylabs.backend.infrastructure.adapters.output.persistence.repository.UserRepository;
@@ -31,7 +33,7 @@ public class OrganizerService {
     public OrganizerProfileDTO getOrganizerById(UUID organizerId) {
         return organizerRepository.findById(organizerId)
                 .map(this::toDTO)
-                .orElseThrow(() -> new RuntimeException("Organizer not found with id: " + organizerId));
+                .orElseThrow(() -> new ResourceNotFoundException("Organizer not found with id: " + organizerId));
     }
 
     /**
@@ -40,7 +42,7 @@ public class OrganizerService {
     public OrganizerProfileDTO getOrganizerByUserId(UUID userId) {
         return organizerRepository.findByUserId(userId)
                 .map(this::toDTO)
-                .orElseThrow(() -> new RuntimeException("Organizer not found for user: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Organizer not found for user: " + userId));
     }
 
     /**
@@ -59,11 +61,11 @@ public class OrganizerService {
 
         // Check if already an organizer
         if (organizerRepository.existsByUserId(userId)) {
-            throw new RuntimeException("User already has an organizer profile");
+            throw new BusinessConflictException("User already has an organizer profile");
         }
 
         var user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         var organizer = OrganizerEntity.builder()
                 .user(user)
@@ -87,7 +89,7 @@ public class OrganizerService {
         log.info("Updating organizer profile for user {}", userId);
 
         var organizer = organizerRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Organizer not found for user: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Organizer not found for user: " + userId));
 
         if (dto.displayName() != null) organizer.setDisplayName(dto.displayName());
         if (dto.avatar() != null) organizer.setAvatar(dto.avatar());
